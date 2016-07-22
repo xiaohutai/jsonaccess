@@ -8,6 +8,8 @@ use Bolt\Extension\Bolt\JsonApi\Helpers\UtilityHelper;
 use Bolt\Extension\Bolt\JsonApi\Parser\Field\FieldFactory;
 use Bolt\Storage\Collection\Relations;
 use Bolt\Storage\Collection\Taxonomy;
+use Bolt\Storage\Field\Collection\FieldCollection;
+use Bolt\Storage\Field\Collection\RepeatingFieldCollection;
 
 class Parser
 {
@@ -63,6 +65,17 @@ class Parser
                 }
             }
 
+            if ($item->get($field) instanceof RepeatingFieldCollection) {
+                $attributes['repeater'] = [];
+                foreach ($item->get($field) as $index => $fields) {
+                    /** @var FieldCollection[] $field */
+                    foreach ($fields as $field) {
+                        $fieldArray = $field->toArray();
+                        $attributes = $this->formatRepeaters($fieldArray['fieldtype'], $attributes, $fieldArray, $index);
+                    }
+                }
+            }
+
             if ($item->get($field) instanceof Taxonomy) {
                 unset($attributes[$field]);
                 if (! isset($attributes['taxonomy'])) {
@@ -76,7 +89,7 @@ class Parser
                     $attributes['taxonomy'][$type][$route] = $field->getName();
                 }
             }
-            
+
             if (in_array($field, ['datepublish', 'datecreated', 'datechanged', 'datedepublish']) && $this->config->getDateIso()) {
                 //Verify not NULL
                 if ($data) {
@@ -193,5 +206,38 @@ class Parser
         }
 
         return $values;
+    }
+
+    protected function formatRepeaters($type, $attributes, $fieldArray, $index)
+    {
+        if ($type == 'imagelist') {
+            foreach ($fieldArray['value'] as &$image) {
+                $attributes['repeater'][$index][$fieldArray['fieldname']]['url'] = $this->utilityHelper->makeAbsolutePathToImage($image['filename']);
+
+                if (is_array($this->config->getThumbnail())) {
+                    $attributes['repeater'][$index][$fieldArray['fieldname']]['thumbnail'] = $this->utilityHelper->makeAbsolutePathToThumbnail($image['filename']);
+                }
+            }
+        }
+
+        if (($type == 'image' || $type == 'file')) {
+            $value = $this->utilityHelper->makeAbsolutePathToImage($fieldArray['value']['file']);
+        }
+        if ($type == 'image' && is_array($this->config->getThumbnail())) {
+
+            $value = $this->utilityHelper->makeAbsolutePathToThumbnail($fieldArray['value']['file']);
+        }
+
+        if (in_array($type, array('date', 'datetime')) && $this->config->getDateIso()) {
+            $value = $this->utilityHelper->dateISO($fieldArray['value']);
+        }
+
+        if (empty($value)) {
+            $value = $fieldArray['value'];
+        }
+
+        $attributes['repeater'][$index][$fieldArray['fieldname']] = $value;
+
+        return $attributes;
     }
 }
