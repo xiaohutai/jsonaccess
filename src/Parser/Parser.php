@@ -66,6 +66,10 @@ class Parser
         $attributes = $fieldCollection->getAttributes();
 
         if (!empty($attributes)) {
+            // Changing Template fields object to array to show it in API, cheking if object exists
+             if (isset($attributes['templatefields']) && !empty($attributes['templatefields'])) {
+                $attributes['templatefields'] = get_object_vars($attributes['templatefields']);
+            }
             // Recursively walk the array..
             array_walk_recursive($attributes, function (&$item) {
                 // Make sure that any \Twig_Markup objects are cast to plain strings.
