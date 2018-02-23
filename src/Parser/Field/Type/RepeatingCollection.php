@@ -61,6 +61,7 @@ class RepeatingCollection extends ArrayCollection implements TypeInterface
                     $attributes[$field->getType()] = $field->render();
                 }
                 $multidimensional[] = $attributes;
+                $attributes = null;
             }
         }
 
