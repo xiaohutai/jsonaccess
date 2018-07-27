@@ -84,7 +84,8 @@ class APIProvider implements ServiceProviderInterface
                 return new Parser(
                     $app['jsonapi.config'],
                     $app['resources'],
-                    $app['storage.metadata']
+                    $app['storage.metadata'],
+                    $app['users']
                 );
             }
         );
@@ -140,7 +141,8 @@ class APIProvider implements ServiceProviderInterface
             function ($app) {
                 return new MenuAction(
                     $app['config'],
-                    $app['jsonapi.config']
+                    $app['jsonapi.config'],
+                    $app['jsonapi.datalinks']
                 );
             }
         );
