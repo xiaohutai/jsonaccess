@@ -33,7 +33,7 @@ class Fields extends AbstractParameter
         return $this;
     }
 
-    protected function getFieldsForContentType($contentType)
+    protected function getFieldsForContentType($contentType, $fallbackFields = 'getListFields')
     {
         if ($this->config->getAllowedFields($contentType)) {
             $allowedFields = $this->config->getAllowedFields($contentType);
@@ -53,8 +53,8 @@ class Fields extends AbstractParameter
         // Default on the default/fallback fields defined in the config.
         if (empty($this->fields[$contentType])) {
             $this->fields[$contentType] = $allowedFields;
-            if ($this->config->getListFields($contentType)) {
-                $this->fields[$contentType] = $this->config->getListFields($contentType);
+            if ($this->config->$fallbackFields($contentType)) {
+                $this->fields[$contentType] = $this->config->$fallbackFields($contentType);
                 // todo: do we need to filter these through 'allowed-fields'?
             }
         }
@@ -76,8 +76,15 @@ class Fields extends AbstractParameter
     /**
      * @return array
      */
-    public function getFields($contentType = null)
+    public function getFields($contentType = null, $itemFields = null)
     {
+        if ($itemFields) {
+            $contentType = ($contentType !== null ?: $this->contentType);
+            $this->getFieldsForContentType($contentType, 'getItemFields');
+
+            return $this->fields[$contentType];
+        }
+
         if (! $contentType) {
             return $this->fields[$this->contentType];
         }

@@ -77,7 +77,7 @@ class SingleAction extends FetchAction
         } else {
             //$allFields = $this->APIHelper->getAllFieldNames($contentType);
             //$fields = $this->APIHelper->getFields($contentType, $allFields, 'item-fields');
-            $fields = $parameters->get('fields')->getFields();
+            $fields = $parameters->get('fields')->getFields(null, 'getItemFields');
             $values = $this->parser->parseItem($results, $fields);
             //@todo get previous and next link
             $prev = $results->previous();
