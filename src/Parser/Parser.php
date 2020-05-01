@@ -97,7 +97,9 @@ class Parser
                 $replacements = $this->config->getReplacements();
                 if (!empty($replacements)) {
                     foreach ($replacements as $from => $to) {
-                        $item = str_replace($from, $to, $item);
+                        if (is_string($item)) {
+                            $item = str_replace($from, $to, $item);
+                        }
                     }
                 }
             });
